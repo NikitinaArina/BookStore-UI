@@ -12,10 +12,12 @@
       <b-button type="button" variant="primary" @click="onSubmit">Войти</b-button>
 
       <div>
-        <b-link href="/forgot_password">Забыли пароль?</b-link>
         <router-link to="/registration">Зарегистрироваться</router-link>
       </div>
     </b-form>
+    <div class="form-group">
+      <div v-if="show" class="alert alert-danger" dismissible role="alert">{{ message }}</div>
+    </div>
   </div>
 </template>
 
@@ -27,7 +29,9 @@ export default {
   data() {
     return {
       username: "",
-      password: ""
+      password: "",
+      message: "",
+      show: this.isShow()
     }
   },
   methods: {
@@ -44,11 +48,22 @@ export default {
           this.$router.push({path: '/profile'})
         }
       })
+    },
+    isShow() {
+      if (this.message) return true
+      else return false;
     }
-  }
+  },
+  mounted() {
+    bus.$on('error', () => {
+      this.show = this.isShow()
+    })
+  },
 }
 </script>
 
 <style scoped>
-
+div a {
+  color: black;
+}
 </style>

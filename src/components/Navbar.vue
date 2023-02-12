@@ -1,6 +1,8 @@
 <template>
   <b-navbar toggleable="lg" type="dark" variant="dark">
-    <b-navbar-brand href="/">Book shop</b-navbar-brand>
+    <b-navbar-brand class="ml-2">
+      <router-link to="/">Book shop</router-link>
+    </b-navbar-brand>
 
     <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
 
@@ -11,17 +13,23 @@
       <b-navbar-brand v-if="isAdmin === true">
         <router-link to="/users">Пользователи</router-link>
       </b-navbar-brand>
-      <b-navbar-brand v-if="isAdmin === true">
-        <router-link to="/users">Заказы</router-link>
+      <b-navbar-brand v-if="isAdmin === true || isManager === true">
+        <router-link to="/books">Добавить книгу</router-link>
+      </b-navbar-brand>
+      <b-navbar-brand v-if="isAdmin === true || isManager === true">
+        <router-link to="/orders">Заказы</router-link>
+      </b-navbar-brand>
+      <b-navbar-brand v-else>
+        <router-link to="/orders" v-if="isLogged === true">Мои заказы</router-link>
       </b-navbar-brand>
       <b-navbar-brand>
-        <router-link to="/">Корзина</router-link>
+        <router-link to="/cart">Корзина</router-link>
       </b-navbar-brand>
 
       <b-navbar-nav class="ml-auto">
         <b-nav-form>
-          <b-form-input size="sm" class="mr-sm-2" placeholder="Search"></b-form-input>
-          <b-button size="sm" class="my-2 my-sm-0" type="submit">Search</b-button>
+          <b-form-input size="sm" class="mr-sm-2" placeholder="Search" v-model="filter"></b-form-input>
+          <b-button size="sm" class="my-2 my-sm-0" type="button" @click="search">Search</b-button>
         </b-nav-form>
 
         <b-navbar-nav class="ml-2 mr-2">
@@ -37,6 +45,7 @@
 
 <script>
 import {bus} from '../main.js'
+import BookService from "@/services/BookService";
 
 export default {
   data() {
@@ -44,7 +53,8 @@ export default {
       isLogged: this.checkIfIsLogged(),
       isAdmin: this.checkIsUserAdmin(),
       isManager: this.checkIsUserManager(),
-      user: null
+      user: null,
+      filter: ""
     }
   },
   created() {
@@ -75,6 +85,13 @@ export default {
     checkIsUserManager() {
       let isManager = localStorage.getItem('isManager')
       return isManager === 'true';
+    },
+    search() {
+      BookService.search(this.filter).then(res => {
+        if (res.status === 200) {
+          this.$root.$emit('filteredBooks', res.data)
+        }
+      })
     }
   }
 }
@@ -85,12 +102,14 @@ a.router-link-active {
   text-decoration: none;
   color: white;
 }
-a{
+
+a {
   text-decoration: none;
   color: white;
   align-self: center;
   padding-right: 8px;
 }
+
 a:hover {
   text-decoration: none;
   color: white;
